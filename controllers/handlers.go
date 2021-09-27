@@ -12,8 +12,13 @@ import (
 
 func GetAlbums(c *gin.Context) {
 	var albums = []entity.Album{}
-
-	c.IndentedJSON(http.StatusOK, albums)
+	if err := storage.DB.Find(&albums).Error; err != nil {
+		fmt.Printf("error select Albums: %3v \n", err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	} else {
+		c.IndentedJSON(http.StatusOK, albums)
+	}
 }
 
 func AddAlbums(c *gin.Context) {
@@ -28,31 +33,28 @@ func AddAlbums(c *gin.Context) {
 		fmt.Printf("error add Album: %3v \n", err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	}
-	/*if err != nil {
-		fmt.Printf("error add Album: %3v \n", err)
-		c.AbortWithStatus(http.StatusInternalServerError)
-		return
 	} else {
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Album OK",
 		})
-	}*/
+	}
 }
 
 // getAlbumByID locates the album whose ID value matches the id
 // parameter sent by the client, then returns that album as a response.
-//func getAlbumByID(c *gin.Context) {
-//	id := c.Param("id")
-//
-//
-// Loop over the list of albums, looking for
-// an album whose ID value matches the parameter.
-//	for _, a := range albums {
-//		if fmt.Sprint(a.ID) == id {
-//			c.IndentedJSON(http.StatusOK, a)
-//			return
-//		}
-//	}
-//	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
-//}
+func GetAlbumByID(c *gin.Context) {
+	var albums = []entity.Album{}
+
+	id := c.Param("id")
+
+	// Loop over the list of albums, looking for
+	// an album whose ID value matches the parameter.
+
+	if err := storage.DB.First(&albums, "id = ?", id).Error; err != nil {
+		fmt.Printf("error select Album: %s \n", id)
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+		return
+	} else {
+		c.IndentedJSON(http.StatusOK, albums)
+	}
+}
