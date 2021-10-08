@@ -58,3 +58,47 @@ func GetAlbumByID(c *gin.Context) {
 		c.IndentedJSON(http.StatusOK, albums)
 	}
 }
+
+func DeleteAlbum(c *gin.Context) {
+	var albums = []entity.Album{}
+
+	id := c.Param("id")
+
+	// Loop over the list of albums and delete if found
+
+	if err := storage.DB.Delete(&albums, "id = ?", id).Error; err != nil {
+		fmt.Printf("error select Album: %s \n", id)
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": "album not found"})
+		return
+	} else {
+		c.IndentedJSON(http.StatusOK, gin.H{
+			"message": "Album deleted succesfully",
+		})
+	}
+}
+
+func UpdateAlbum(c *gin.Context) {
+
+	var album entity.Album
+
+	id := c.Param("id")
+
+	// Loop over the list of albums, grab a single album and make sure it exists
+
+	if err := storage.DB.Where("id = ?", id).First(&album).Error; err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Record not found!"})
+		return
+	}
+
+	// we need to validate the user input with the UpdateAlbumInput schema
+	var input entity.UpdateAlbumInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// we update the album model using the Updates method
+	storage.DB.Model(&album).Updates(input)
+
+	c.JSON(http.StatusOK, gin.H{"data": album})
+}

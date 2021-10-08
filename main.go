@@ -30,6 +30,8 @@ func main() {
 	router.GET("/albums", controllers.GetAlbums)
 	router.POST("/albums", controllers.AddAlbums)
 	router.GET("/albums/:id", controllers.GetAlbumByID)
+	router.DELETE("/albums/:id", controllers.DeleteAlbum)
+	router.PATCH("/albums/:id", controllers.UpdateAlbum)
 
 	router.Run("localhost:8080")
 
