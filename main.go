@@ -5,6 +5,7 @@ import (
 
 	"training/GolangAPI/controllers"
 	"training/GolangAPI/storage"
+	"training/GolangAPI/utils"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,8 +19,13 @@ import (
 //}
 
 func main() {
+	config, err := utils.LoadConfig(".")
+	if err != nil {
+		log.Fatal(err)
+	}
 
 	log.Println("Start Project")
+	//	config.RuntimeSetup, " and on port: ", config.AppPort)
 
 	DB := storage.ConnectDB()
 	defer DB.Close()
@@ -27,12 +33,13 @@ func main() {
 	log.Println(DB.RowsAffected)
 
 	router := gin.Default()
+	//	router.Static(relativePath:"/", root: "./static")
 	router.GET("/albums", controllers.GetAlbums)
 	router.POST("/albums", controllers.AddAlbums)
 	router.GET("/albums/:id", controllers.GetAlbumByID)
 	router.DELETE("/albums/:id", controllers.DeleteAlbum)
 	router.PATCH("/albums/:id", controllers.UpdateAlbum)
 
-	router.Run("localhost:8080")
-
+	//router.Run("localhost:8080")
+	router.Run(config.ServerAddress + ":" + config.AppPort)
 }
